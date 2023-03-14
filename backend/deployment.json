@@ -1,0 +1,18 @@
+{
+  "oauthScopes": ["https://www.googleapis.com/auth/gmail.addons.execute"],
+  "addOns": {
+    "common": {
+      "name": "SamePage",
+      "logoUrl": "https://samepage.network/images/logo.png",
+      "homepageTrigger": {
+        "runFunction": "https://us-central1-samepage-380616.cloudfunctions.net/loadHomePage"
+      }
+    },
+    "gmail": {},
+    "drive": {},
+    "calendar": {},
+    "docs": {},
+    "sheets": {},
+    "slides": {}
+  }
+}
