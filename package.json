@@ -27,6 +27,6 @@
   },
   "homepage": "https://github.com/samepage-network/google-samepage#readme",
   "dependencies": {
-    "samepage": "^0.45.4"
+    "samepage": "^0.46.4"
   }
 }
