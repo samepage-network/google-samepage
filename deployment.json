@@ -5,7 +5,7 @@
       "name": "SamePage",
       "logoUrl": "https://samepage.network/images/logo.png",
       "homepageTrigger": {
-        "runFunction": "https://api.samepage.network/google"
+        "runFunction": "https://api.samepage.network/extensions/google/home"
       }
     },
     "gmail": {},

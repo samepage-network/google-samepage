@@ -9,31 +9,32 @@ const home = async () => {
     FunctionName: "samepage-network_extensions-monday-query_post",
     Payload: Buffer.from(JSON.stringify({})),
   });
-  const cards = invokeLambda.Payload
+  const boards = invokeLambda.Payload
     ? (JSON.parse(Buffer.from(invokeLambda.Payload).toString("utf-8")) as {
         id: string;
         name: string;
       }[][])
     : [];
-  const navigations = cards.map((card, index) => ({
-    pushCard: {
-      header: {
-        title: `Monday Board ${index + 1}`,
+  const sections = boards.map((card, index) => ({
+    header: `Board ${index + 1}`,
+    widgets: card.map((item) => ({
+      textParagraph: {
+        text: `Item: ${item.name} (${item.id})`,
       },
-      sections: [
-        {
-          widgets: card.map((item) => ({
-            textParagraph: {
-              text: `Item: ${item.name} (${item.id})`,
-            },
-          })),
-        },
-      ],
-    },
+    })),
   }));
   return {
     action: {
-      navigations,
+      navigations: [
+        {
+          pushCard: {
+            header: {
+              title: "Monday Boards",
+            },
+            sections,
+          },
+        },
+      ],
     },
   };
 };
