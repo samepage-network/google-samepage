@@ -1,20 +1,23 @@
 import createAPIGatewayProxyHandler from "samepage/backend/createAPIGatewayProxyHandler";
-import { Lambda } from "@aws-sdk/client-lambda";
+import axios from "axios";
 
-const lambda = new Lambda({});
+const API_URL =
+  process.env.API_URL ||
+  (process.env.NODE_ENV === "production"
+    ? "https://api.samepage.network"
+    : "https://samepage.ngrok.io");
 
 /** Creates a card with two widgets. */
 const home = async () => {
-  const invokeLambda = await lambda.invoke({
-    FunctionName: "samepage-network_extensions-monday-query_post",
-    Payload: Buffer.from(JSON.stringify({})),
-  });
-  const boards = invokeLambda.Payload
-    ? (JSON.parse(Buffer.from(invokeLambda.Payload).toString("utf-8")) as {
+  const boards = await axios
+    .post<{
+      boards: {
         id: string;
         name: string;
-      }[][])
-    : [];
+      }[][];
+    }>(`${API_URL}/extensions/monday/query`)
+    .then((r) => r.data.boards);
+  console.log("boards", boards);
   const sections = boards.map((card, index) => ({
     header: `Board ${index + 1}`,
     widgets: card.map((item) => ({
