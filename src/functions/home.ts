@@ -7,22 +7,26 @@ const API_URL =
     ? "https://api.samepage.network"
     : "https://samepage.ngrok.io");
 
-/** Creates a card with two widgets. */
 const home = async () => {
   const boards = await axios
     .post<{
       boards: {
-        id: string;
         name: string;
-      }[][];
+        items: {
+          id: string;
+          name: string;
+          column_values: { text: string; title: string }[];
+        }[];
+      }[];
     }>(`${API_URL}/extensions/monday/query`)
-    .then((r) => r.data.boards);
-  console.log("boards", boards);
-  const sections = boards.map((card, index) => ({
-    header: `Board ${index + 1}`,
-    widgets: card.map((item) => ({
+    .then((r) => r.data.boards.filter((b) => !b.name.startsWith("Sub")));
+  const sections = boards.map((card) => ({
+    header: card.name,
+    widgets: card.items.map(({ name, id, column_values }) => ({
       textParagraph: {
-        text: `Item: ${item.name} (${item.id})`,
+        text: `Item: ${name} (${id})\n${column_values
+          .map((vc) => `    ${vc.title}: ${vc.text}`)
+          .join("\n")}`,
       },
     })),
   }));

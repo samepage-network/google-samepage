@@ -1,0 +1,18 @@
+{
+  "oauthScopes": ["https://www.googleapis.com/auth/gmail.addons.execute"],
+  "addOns": {
+    "common": {
+      "name": "SamePage DEV",
+      "logoUrl": "https://samepage.network/images/logo-dev.png",
+      "homepageTrigger": {
+        "runFunction": "https://samepage.ngrok.io/extensions/google/home"
+      }
+    },
+    "gmail": {},
+    "drive": {},
+    "calendar": {},
+    "docs": {},
+    "sheets": {},
+    "slides": {}
+  }
+}
