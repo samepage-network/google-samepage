@@ -7,7 +7,7 @@ const API_URL =
     ? "https://api.samepage.network"
     : "https://samepage.ngrok.io");
 
-const home = async () => {
+const home = async (args: any) => {
   const boards = await axios
     .post<{
       boards: {
@@ -20,15 +20,39 @@ const home = async () => {
       }[];
     }>(`${API_URL}/extensions/monday/query`)
     .then((r) => r.data.boards.filter((b) => !b.name.startsWith("Sub")));
-  const sections = boards.map((card) => ({
-    header: card.name,
-    widgets: card.items.map(({ name, id, column_values }) => ({
-      textParagraph: {
-        text: `Item: ${name} (${id})\n${column_values
-          .map((vc) => `    ${vc.title}: ${vc.text}`)
-          .join("\n")}`,
-      },
-    })),
+  const widgets = boards.map((card) => ({
+    buttonList: {
+      buttons: [
+        {
+          text: `View ${card.name}`,
+          color: {
+            red: 0,
+            green: 0,
+            blue: 1,
+            alpha: 1,
+          },
+          onClick: {
+            card: {
+              header: {
+                title: `Board: ${card.name}`,
+              },
+              sections: [
+                {
+                  header: "Items",
+                  widgets: card.items.map(({ name, id, column_values }) => ({
+                    textParagraph: {
+                      text: `Item: ${name} (${id})\n${column_values
+                        .map((vc) => `    ${vc.title}: ${vc.text}`)
+                        .join("\n")}`,
+                    },
+                  })),
+                },
+              ],
+            },
+          },
+        },
+      ],
+    },
   }));
   return {
     action: {
@@ -36,9 +60,63 @@ const home = async () => {
         {
           pushCard: {
             header: {
-              title: "Monday Boards",
+              title: "Welcome to Samepage",
             },
-            sections,
+            sections: [
+              {
+                header: "Home",
+                widgets: [
+                  {
+                    textParagraph: {
+                      text: "You're about to connect your notebook to SamePage - the inter-app collaboration network.",
+                    },
+                  },
+                  {
+                    textParagraph: {
+                      text: "We're excited to have you!",
+                    },
+                  },
+                  {
+                    buttonList: {
+                      buttons: [
+                        {
+                          text: "Setup",
+                          color: {
+                            red: 0,
+                            green: 0,
+                            blue: 1,
+                            alpha: 1,
+                          },
+                          onClick: {
+                            card: {
+                              header: {
+                                title: "Setup Samepage",
+                              },
+                              sections: [
+                                {
+                                  header: "New to SamePage?",
+                                  widgets: [
+                                    {
+                                      textParagraph: {
+                                        text: "You're about to connect your notebook to SamePage - the inter-app collaboration network.",
+                                      },
+                                      // buttonList: {
+                                      //     buttons: [],
+                                      // }
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  },
+                ],
+              },
+              { header: "Boards", widgets },
+            ],
           },
         },
       ],
