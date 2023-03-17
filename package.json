@@ -1,6 +1,6 @@
 {
   "name": "google-samepage",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Official Google client into the inter-tool protocol.",
   "main": "./dist/index.js",
   "scripts": {
