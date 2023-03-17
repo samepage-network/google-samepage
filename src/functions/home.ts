@@ -1,4 +1,4 @@
-// import createAPIGatewayProxyHandler from "~/data/createAPIGatewayProxyHandler.server";
+import createAPIGatewayProxyHandler from "samepage/backend/createAPIGatewayProxyHandler";
 import { Lambda } from "@aws-sdk/client-lambda";
 
 const lambda = new Lambda({});
@@ -39,9 +39,4 @@ const home = async () => {
   };
 };
 
-export default home;
-
-// export const handler = createAPIGatewayProxyHandler({
-//   logic,
-//   allowedOrigins: [/^https:\/\/([\w]+\.)?google\.com/],
-// });
+export default createAPIGatewayProxyHandler(home);
