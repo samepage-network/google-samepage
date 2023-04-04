@@ -6,7 +6,8 @@
   "scripts": {
     "postinstall": "patch-package --patch-dir node_modules/samepage/patches",
     "start": "npx samepage dev",
-    "test": "npx samepage test"
+    "test": "npx samepage test",
+    "deploy:dev": "gcloud workspace-add-ons deployments replace samepage-dev --deployment-file=dev.json"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,9 @@
   },
   "homepage": "https://github.com/samepage-network/google-samepage#readme",
   "dependencies": {
-    "samepage": "^0.47.0"
+    "@googleapis/admin": "^7.4.0",
+    "@googleapis/oauth2": "^1.0.0",
+    "googleapis": "^114.0.0",
+    "samepage": "^0.55.0"
   }
 }

@@ -1,11 +1,14 @@
 {
-  "oauthScopes": ["https://www.googleapis.com/auth/gmail.addons.execute"],
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/gmail.addons.execute",
+    "https://www.googleapis.com/auth/userinfo.email"
+  ],
   "addOns": {
     "common": {
       "name": "SamePage DEV",
       "logoUrl": "https://samepage.network/images/logo-dev.png",
       "homepageTrigger": {
-        "runFunction": "https://samepage.ngrok.io/extensions/google/home"
+        "runFunction": "https://api.samepage.ngrok.io/extensions/google/home"
       }
     },
     "gmail": {},

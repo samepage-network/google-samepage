@@ -1,11 +1,13 @@
 import createAPIGatewayProxyHandler from "samepage/backend/createAPIGatewayProxyHandler";
 import axios from "axios";
+import { oauth2_v2 } from "@googleapis/oauth2";
+import { admin_directory_v1 } from "@googleapis/admin";
 
 const API_URL =
   process.env.API_URL ||
   (process.env.NODE_ENV === "production"
     ? "https://api.samepage.network"
-    : "https://samepage.ngrok.io");
+    : "https://api.samepage.ngrok.io");
 
 const home = async (args: any) => {
   const boards = await axios
@@ -19,7 +21,10 @@ const home = async (args: any) => {
         }[];
       }[];
     }>(`${API_URL}/extensions/monday/query`)
-    .then((r) => r.data.boards.filter((b) => !b.name.startsWith("Sub")));
+    .then((r) => r.data.boards.filter((b) => !b.name.startsWith("Sub")))
+    .catch(() => {
+      return [];
+    });
   const widgets = boards.map((card) => ({
     buttonList: {
       buttons: [
@@ -54,6 +59,16 @@ const home = async (args: any) => {
       ],
     },
   }));
+  const oauth_token = args.authorizationEventObject.userOAuthToken;
+  const client = new oauth2_v2.Oauth2({});
+  const { email, hd } = await client.userinfo
+    .get({
+      oauth_token,
+    })
+    .then((r) => {
+      return r.data;
+    });
+  const workspace = hd || email;
   return {
     action: {
       navigations: [
@@ -64,7 +79,7 @@ const home = async (args: any) => {
             },
             sections: [
               {
-                header: "Home",
+                header: `${workspace} Home`,
                 widgets: [
                   {
                     textParagraph: {
@@ -115,8 +130,7 @@ const home = async (args: any) => {
                   },
                 ],
               },
-              { header: "Boards", widgets },
-            ],
+            ].concat(widgets.length ? { header: "Boards", widgets } : []),
           },
         },
       ],
