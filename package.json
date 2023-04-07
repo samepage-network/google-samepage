@@ -31,6 +31,6 @@
     "@googleapis/admin": "^7.4.0",
     "@googleapis/oauth2": "^1.0.0",
     "googleapis": "^114.0.0",
-    "samepage": "^0.55.0"
+    "samepage": "^0.58.0"
   }
 }

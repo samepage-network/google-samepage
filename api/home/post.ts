@@ -1,13 +1,26 @@
 import createAPIGatewayProxyHandler from "samepage/backend/createAPIGatewayProxyHandler";
+import getNotebookCredentials from "samepage/backend/getNotebookCredentials";
 import axios from "axios";
 import { oauth2_v2 } from "@googleapis/oauth2";
-import { admin_directory_v1 } from "@googleapis/admin";
 
 const API_URL =
   process.env.API_URL ||
   (process.env.NODE_ENV === "production"
     ? "https://api.samepage.network"
     : "https://api.samepage.ngrok.io");
+
+const emailWidget = {
+  textInput: {
+    name: "email",
+    label: "Email",
+  },
+};
+const passwordWidget = {
+  textInput: {
+    name: "password",
+    label: "Password",
+  },
+};
 
 const home = async (args: any) => {
   const boards = await axios
@@ -60,15 +73,29 @@ const home = async (args: any) => {
     },
   }));
   const oauth_token = args.authorizationEventObject.userOAuthToken;
-  const client = new oauth2_v2.Oauth2({});
-  const { email, hd } = await client.userinfo
+  const googleClient = new oauth2_v2.Oauth2({});
+  const { email, hd } = await googleClient.userinfo
     .get({
       oauth_token,
     })
     .then((r) => {
       return r.data;
     });
-  const workspace = hd || email;
+  const result = await getNotebookCredentials({
+    email: email || "",
+    app: "google",
+    workspace: hd || "",
+  })
+    .then((data) => ({ success: true as const, data }))
+    .catch((e) => {
+      if (e.code === 404) {
+        return { success: false as const, data: { login: true } };
+      } else if (e.code === 401) {
+        return { success: false as const, data: { login: false } };
+      }
+      // return Promise.reject(e); TODO
+      return { success: false as const, data: { login: true } };
+    });
   return {
     action: {
       navigations: [
@@ -79,58 +106,72 @@ const home = async (args: any) => {
             },
             sections: [
               {
-                header: `${workspace} Home`,
-                widgets: [
-                  {
-                    textParagraph: {
-                      text: "You're about to connect your notebook to SamePage - the inter-app collaboration network.",
-                    },
-                  },
-                  {
-                    textParagraph: {
-                      text: "We're excited to have you!",
-                    },
-                  },
-                  {
-                    buttonList: {
-                      buttons: [
-                        {
-                          text: "Setup",
-                          color: {
-                            red: 0,
-                            green: 0,
-                            blue: 1,
-                            alpha: 1,
-                          },
-                          onClick: {
-                            card: {
-                              header: {
-                                title: "Setup Samepage",
-                              },
-                              sections: [
-                                {
-                                  header: "New to SamePage?",
-                                  widgets: [
-                                    {
-                                      textParagraph: {
-                                        text: "You're about to connect your notebook to SamePage - the inter-app collaboration network.",
-                                      },
-                                      // buttonList: {
-                                      //     buttons: [],
-                                      // }
-                                    },
-                                  ],
-                                },
-                              ],
-                            },
-                          },
+                header: `Home`,
+                widgets: result.success
+                  ? [{ header: "Boards", widgets }]
+                  : result.data.login
+                  ? [
+                      {
+                        textParagraph: {
+                          text: "Enter your Samepage credentials to get started!",
                         },
-                      ],
-                    },
-                  },
-                ],
+                      },
+                      emailWidget,
+                      passwordWidget,
+                      {
+                        buttonList: {
+                          buttons: [
+                            {
+                              text: "Log In",
+                              color: {
+                                red: 0,
+                                green: 0,
+                                blue: 1,
+                                alpha: 1,
+                              },
+                              onClick: {
+                                action: {
+                                  function:
+                                    "https://api.samepage.ngrok.io/extensions/google/login",
+                                },
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ]
+                  : [
+                      {
+                        textParagraph: {
+                          text: "Create your Samepage credentials to get started!",
+                        },
+                      },
+                      emailWidget,
+                      passwordWidget,
+                      {
+                        buttonList: {
+                          buttons: [
+                            {
+                              text: "Sign Up",
+                              color: {
+                                red: 0,
+                                green: 0,
+                                blue: 1,
+                                alpha: 1,
+                              },
+                              onClick: {
+                                action: {
+                                  function:
+                                    "https://api.samepage.ngrok.io/extensions/google/signup",
+                                },
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
               },
-            ].concat(widgets.length ? { header: "Boards", widgets } : []),
+            ],
           },
         },
       ],
