@@ -2,6 +2,7 @@ import createAPIGatewayProxyHandler from "samepage/backend/createAPIGatewayProxy
 import getNotebookCredentials from "samepage/backend/getNotebookCredentials";
 import axios from "axios";
 import { oauth2_v2 } from "@googleapis/oauth2";
+import { z } from "zod";
 
 const API_URL =
   process.env.API_URL ||
@@ -9,12 +10,13 @@ const API_URL =
     ? "https://api.samepage.network"
     : "https://api.samepage.ngrok.io");
 
-const emailWidget = {
+const emailWidget = (value?: string | null) => ({
   textInput: {
     name: "email",
     label: "Email",
+    value,
   },
-};
+});
 const passwordWidget = {
   textInput: {
     name: "password",
@@ -22,7 +24,13 @@ const passwordWidget = {
   },
 };
 
-const home = async (args: any) => {
+const zGoogleHomeArgs = z.object({
+  authorizationEventObject: z.object({
+    userOAuthToken: z.string(),
+  }),
+});
+
+const home = async (args: unknown) => {
   const boards = await axios
     .post<{
       boards: {
@@ -72,7 +80,8 @@ const home = async (args: any) => {
       ],
     },
   }));
-  const oauth_token = args.authorizationEventObject.userOAuthToken;
+  const oauth_token =
+    zGoogleHomeArgs.parse(args).authorizationEventObject.userOAuthToken;
   const googleClient = new oauth2_v2.Oauth2({});
   const { email, hd } = await googleClient.userinfo
     .get({
@@ -93,8 +102,7 @@ const home = async (args: any) => {
       } else if (e.code === 401) {
         return { success: false as const, data: { login: false } };
       }
-      // return Promise.reject(e); TODO
-      return { success: false as const, data: { login: true } };
+      return Promise.reject(e);
     });
   return {
     action: {
@@ -116,7 +124,7 @@ const home = async (args: any) => {
                           text: "Enter your Samepage credentials to get started!",
                         },
                       },
-                      emailWidget,
+                      emailWidget(email),
                       passwordWidget,
                       {
                         buttonList: {
@@ -146,7 +154,7 @@ const home = async (args: any) => {
                           text: "Create your Samepage credentials to get started!",
                         },
                       },
-                      emailWidget,
+                      emailWidget(email),
                       passwordWidget,
                       {
                         buttonList: {
