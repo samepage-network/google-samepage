@@ -1,14 +1,8 @@
 import createAPIGatewayProxyHandler from "samepage/backend/createAPIGatewayProxyHandler";
 import getNotebookCredentials from "samepage/backend/getNotebookCredentials";
-import axios from "axios";
 import { oauth2_v2 } from "@googleapis/oauth2";
 import { z } from "zod";
-
-const API_URL =
-  process.env.API_URL ||
-  (process.env.NODE_ENV === "production"
-    ? "https://api.samepage.network"
-    : "https://api.samepage.ngrok.io");
+import getHomeCard from "src/cards/getHomeCard";
 
 const emailWidget = (value?: string | null) => ({
   textInput: {
@@ -31,55 +25,6 @@ const zGoogleHomeArgs = z.object({
 });
 
 const home = async (args: unknown) => {
-  const boards = await axios
-    .post<{
-      boards: {
-        name: string;
-        items: {
-          id: string;
-          name: string;
-          column_values: { text: string; title: string }[];
-        }[];
-      }[];
-    }>(`${API_URL}/extensions/monday/query`)
-    .then((r) => r.data.boards.filter((b) => !b.name.startsWith("Sub")))
-    .catch(() => {
-      return [];
-    });
-  const widgets = boards.map((card) => ({
-    buttonList: {
-      buttons: [
-        {
-          text: `View ${card.name}`,
-          color: {
-            red: 0,
-            green: 0,
-            blue: 1,
-            alpha: 1,
-          },
-          onClick: {
-            card: {
-              header: {
-                title: `Board: ${card.name}`,
-              },
-              sections: [
-                {
-                  header: "Items",
-                  widgets: card.items.map(({ name, id, column_values }) => ({
-                    textParagraph: {
-                      text: `Item: ${name} (${id})\n${column_values
-                        .map((vc) => `    ${vc.title}: ${vc.text}`)
-                        .join("\n")}`,
-                    },
-                  })),
-                },
-              ],
-            },
-          },
-        },
-      ],
-    },
-  }));
   const oauth_token =
     zGoogleHomeArgs.parse(args).authorizationEventObject.userOAuthToken;
   const googleClient = new oauth2_v2.Oauth2({});
@@ -116,7 +61,7 @@ const home = async (args: unknown) => {
               {
                 header: `Home`,
                 widgets: result.success
-                  ? [{ header: "Boards", widgets }]
+                  ? await getHomeCard(result.data)
                   : result.data.login
                   ? [
                       {

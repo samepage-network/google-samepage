@@ -1,6 +1,8 @@
 import createAPIGatewayProxyHandler from "samepage/backend/createAPIGatewayProxyHandler";
+import onboardNotebook from "samepage/backend/onboardNotebook";
 import { z } from "zod";
 import { oauth2_v2 } from "@googleapis/oauth2";
+import getHomeCard from "src/cards/getHomeCard";
 
 const zLoginArgs = z.object({
   authorizationEventObject: z.object({
@@ -72,27 +74,28 @@ const logic = async (args: unknown) => {
       },
     };
   }
+  const notebook = await onboardNotebook({
+    email,
+    password: password.stringInputs.value[0],
+    workspace: hd || "",
+    app: "google",
+  });
   return {
     renderActions: {
       action: {
         navigations: [
           {
+            popToRoot: true,
+          },
+          {
             pushCard: {
               header: {
                 title: "Welcome to Samepage",
               },
-              sections: [
-                {
-                  header: `Home`,
-                  widgets: [
-                    {
-                      textParagraph: {
-                        text: "We tried logging in",
-                      },
-                    },
-                  ],
-                },
-              ],
+              sections: await getHomeCard({
+                uuid: notebook.notebookUuid,
+                token: notebook.token,
+              }),
             },
           },
         ],
