@@ -4,6 +4,7 @@ import axios from "axios";
 export const logic = async (args: {
   grant_type: string;
   code: string;
+  refresh_token: string;
   ["x-google-client-id"]: string;
   ["x-google-client-secret"]: string;
   ["x-google-redirect-uri"]: string;
@@ -11,6 +12,7 @@ export const logic = async (args: {
   const { data } = await axios.post<{ access_token: string }>(
     "https://oauth2.googleapis.com/token",
     {
+      refresh_token: args.refresh_token,
       code: args.code,
       grant_type: args.grant_type,
       client_id: args["x-google-client-id"] || process.env.OAUTH_CLIENT_ID,
