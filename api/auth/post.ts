@@ -9,9 +9,8 @@ export const logic = async (args: {
   ["x-google-client-secret"]: string;
   ["x-google-redirect-uri"]: string;
 }) => {
-  const { data } = await axios.post<{ access_token: string }>(
-    "https://oauth2.googleapis.com/token",
-    {
+  const { data } = await axios
+    .post<{ access_token: string }>("https://oauth2.googleapis.com/token", {
       refresh_token: args.refresh_token,
       code: args.code,
       grant_type: args.grant_type,
@@ -23,14 +22,27 @@ export const logic = async (args: {
         (process.env.NODE_ENV === "production"
           ? "https://samepage.network/oauth/google"
           : "https://samepage.ngrok.io/oauth/google"),
-    }
-  );
+    })
+    .catch((e) =>
+      Promise.reject(
+        new Error(
+          `Failed to fetch google token: ${JSON.stringify(e.response.data)}`
+        )
+      )
+    );
   if (args.grant_type === "authorization_code")
     return axios
       .get(
         `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${data.access_token}`
       )
-      .then((u) => ({ ...data, label: u.data.email }));
+      .then((u) => ({ ...data, label: u.data.email }))
+      .catch((e) =>
+        Promise.reject(
+          new Error(
+            `Failed to fetch userinfo: ${JSON.stringify(e.response.data)}`
+          )
+        )
+      );
   return data;
 };
 
