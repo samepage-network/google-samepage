@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-      - name: install
+      - name: install -f
         run: npm install
       - name: build
         run: npx samepage build
