@@ -18,21 +18,27 @@ export const logic = async ({
   ["x-google-redirect-uri"]: string;
 }) => {
   const { scope: _, authuser: __, prompt: ___, ...args } = inputArgs;
+  const tokenArgs = {
+    ...args,
+    client_id: clientId || process.env.OAUTH_CLIENT_ID,
+    client_secret: clientSecret || process.env.OAUTH_CLIENT_SECRET,
+    redirect_uri:
+      redirectUri ||
+      (process.env.NODE_ENV === "production"
+        ? "https://samepage.network/oauth/google"
+        : "https://samepage.ngrok.io/oauth/google"),
+  };
   const { data } = await axios
-    .post<{ access_token: string }>("https://oauth2.googleapis.com/token", {
-      ...args,
-      client_id: clientId || process.env.OAUTH_CLIENT_ID,
-      client_secret: clientSecret || process.env.OAUTH_CLIENT_SECRET,
-      redirect_uri:
-        redirectUri ||
-        (process.env.NODE_ENV === "production"
-          ? "https://samepage.network/oauth/google"
-          : "https://samepage.ngrok.io/oauth/google"),
-    })
+    .post<{ access_token: string }>(
+      "https://oauth2.googleapis.com/token",
+      tokenArgs
+    )
     .catch((e) =>
       Promise.reject(
         new Error(
-          `Failed to fetch google token: ${JSON.stringify(e.response.data)}`
+          `Failed to fetch google token:\n${JSON.stringify(
+            e.response.data
+          )}\nToken args:\n${JSON.stringify(tokenArgs)}`
         )
       )
     );
