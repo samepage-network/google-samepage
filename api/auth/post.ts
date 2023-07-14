@@ -65,5 +65,5 @@ export default createAPIGatewayHandler({
     "x-google-client-secret",
     "x-google-redirect-uri",
   ],
-  allowedOrigins: [/.+/],
+allowedOrigins: [/.*/],
 });
