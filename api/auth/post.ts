@@ -5,15 +5,19 @@ export const logic = async ({
   ["x-google-client-id"]: clientId,
   ["x-google-client-secret"]: clientSecret,
   ["x-google-redirect-uri"]: redirectUri,
-  ...args
+  ...inputArgs
 }: {
   grant_type: string;
   code: string;
   refresh_token: string;
+  scope: string;
+  authuser: string;
+  prompt: string;
   ["x-google-client-id"]: string;
   ["x-google-client-secret"]: string;
   ["x-google-redirect-uri"]: string;
 }) => {
+  const { scope: _, authuser: __, prompt: ___, ...args } = inputArgs;
   const { data } = await axios
     .post<{ access_token: string }>("https://oauth2.googleapis.com/token", {
       ...args,
