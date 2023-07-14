@@ -1,7 +1,12 @@
 import createAPIGatewayHandler from "samepage/backend/createAPIGatewayProxyHandler";
 import axios from "axios";
 
-export const logic = async (args: {
+export const logic = async ({
+  ["x-google-client-id"]: clientId,
+  ["x-google-client-secret"]: clientSecret,
+  ["x-google-redirect-uri"]: redirectUri,
+  ...args
+}: {
   grant_type: string;
   code: string;
   refresh_token: string;
@@ -11,14 +16,11 @@ export const logic = async (args: {
 }) => {
   const { data } = await axios
     .post<{ access_token: string }>("https://oauth2.googleapis.com/token", {
-      refresh_token: args.refresh_token,
-      code: args.code,
-      grant_type: args.grant_type,
-      client_id: args["x-google-client-id"] || process.env.OAUTH_CLIENT_ID,
-      client_secret:
-        args["x-google-client-secret"] || process.env.OAUTH_CLIENT_SECRET,
+      ...args,
+      client_id: clientId || process.env.OAUTH_CLIENT_ID,
+      client_secret: clientSecret || process.env.OAUTH_CLIENT_SECRET,
       redirect_uri:
-        args["x-google-redirect-uri"] ||
+        redirectUri ||
         (process.env.NODE_ENV === "production"
           ? "https://samepage.network/oauth/google"
           : "https://samepage.ngrok.io/oauth/google"),
