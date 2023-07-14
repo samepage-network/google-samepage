@@ -1,12 +1,6 @@
 import createAPIGatewayHandler from "samepage/backend/createAPIGatewayProxyHandler";
 import axios from "axios";
 
-const headers = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST",
-  "Access-Control-Allow-Credentials": true,
-};
-
 export const logic = async ({
   ["x-google-client-id"]: clientId,
   ["x-google-client-secret"]: clientSecret,
@@ -34,7 +28,7 @@ export const logic = async ({
         ? "https://samepage.network/oauth/google"
         : "https://samepage.ngrok.io/oauth/google"),
   };
-  const { data: _data } = await axios
+  const { data } = await axios
     .post<{ access_token: string }>(
       "https://oauth2.googleapis.com/token",
       tokenArgs
@@ -48,13 +42,12 @@ export const logic = async ({
         )
       )
     );
-  const data = { ..._data, headers };
   if (args.grant_type === "authorization_code")
     return axios
       .get(
         `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${data.access_token}`
       )
-      .then((u) => ({ ...data, label: u.data.email, headers }))
+      .then((u) => ({ ...data, label: u.data.email }))
       .catch((e) =>
         Promise.reject(
           new Error(
@@ -72,4 +65,5 @@ export default createAPIGatewayHandler({
     "x-google-client-secret",
     "x-google-redirect-uri",
   ],
+  allowedOrigins: [/.+/],
 });
