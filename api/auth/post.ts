@@ -7,6 +7,7 @@ export const logic = async ({
   ["x-google-redirect-uri"]: redirectUri,
   ...inputArgs
 }: {
+  requestId: string;
   grant_type: string;
   code: string;
   refresh_token: string;
@@ -17,7 +18,7 @@ export const logic = async ({
   ["x-google-client-secret"]: string;
   ["x-google-redirect-uri"]: string;
 }) => {
-  const { scope: _, authuser: __, prompt: ___, ...args } = inputArgs;
+  const { scope: _, authuser: __, prompt: ___, requestId, ...args } = inputArgs;
   const tokenArgs = {
     ...args,
     client_id: clientId || process.env.OAUTH_CLIENT_ID,
@@ -28,8 +29,8 @@ export const logic = async ({
     redirect_uri:
       redirectUri ||
       (process.env.NODE_ENV === "production"
-        ? "https://samepage.network/oauth/google"
-        : "https://samepage.ngrok.io/oauth/google"),
+        ? "https://samepage.network/oauth/google?roamjs=true"
+        : "https://samepage.ngrok.io/oauth/google?roamjs=true"),
   };
   const { data } = await axios
     .post<{ access_token: string }>(
