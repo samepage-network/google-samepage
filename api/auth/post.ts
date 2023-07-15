@@ -21,7 +21,10 @@ export const logic = async ({
   const tokenArgs = {
     ...args,
     client_id: clientId || process.env.OAUTH_CLIENT_ID,
-    client_secret: clientSecret || process.env.OAUTH_CLIENT_SECRET,
+    client_secret:
+      clientSecret ||
+      process.env.ROAMJS_GOOGLE_CLIENT_SECRET ||
+      process.env.OAUTH_CLIENT_SECRET,
     redirect_uri:
       redirectUri ||
       (process.env.NODE_ENV === "production"
@@ -65,5 +68,5 @@ export default createAPIGatewayHandler({
     "x-google-client-secret",
     "x-google-redirect-uri",
   ],
-allowedOrigins: [/.*/],
+  allowedOrigins: [/.*/],
 });
