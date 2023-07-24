@@ -26,11 +26,15 @@ export const logic = async ({
       clientSecret ||
       process.env.ROAMJS_GOOGLE_CLIENT_SECRET ||
       process.env.OAUTH_CLIENT_SECRET,
-    redirect_uri:
-      redirectUri ||
-      (process.env.NODE_ENV === "production"
-        ? "https://samepage.network/oauth/google?roamjs=true"
-        : "https://samepage.ngrok.io/oauth/google?roamjs=true"),
+    ...(args.grant_type === "authorization_code"
+      ? {
+          redirect_uri:
+            redirectUri ||
+            (process.env.NODE_ENV === "production"
+              ? "https://samepage.network/oauth/google?roamjs=true"
+              : "https://samepage.ngrok.io/oauth/google?roamjs=true"),
+        }
+      : {}),
   };
   const { data } = await axios
     .post<{ access_token: string }>(
