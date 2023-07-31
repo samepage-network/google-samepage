@@ -14,11 +14,12 @@ export const logic = async ({
   scope: string;
   authuser: string;
   prompt: string;
+  dev: boolean;
   ["x-google-client-id"]: string;
   ["x-google-client-secret"]: string;
   ["x-google-redirect-uri"]: string;
 }) => {
-  const { scope: _, authuser: __, prompt: ___, requestId, ...args } = inputArgs;
+  const { scope: _, authuser: __, prompt: ___, requestId, dev, ...args } = inputArgs;
   const tokenArgs = {
     ...args,
     client_id: clientId || process.env.OAUTH_CLIENT_ID,
