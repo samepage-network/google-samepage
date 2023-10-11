@@ -1,17 +1,6 @@
 import createAPIGatewayHandler from "samepage/backend/createAPIGatewayProxyHandler";
 import axios from "axios";
-import downloadFileContent from "samepage/backend/downloadFileContent";
-import uploadFileContent from "samepage/backend/uploadFileContent";
-import emailError from "samepage/backend/emailError.server";
-
-const log = async (code: string) => {
-  const Key = `data/debugging/google/oauth.json`;
-  const data = await downloadFileContent({
-    Key,
-  }).then((r) => JSON.parse(r));
-  data.codes.push({ code, date: new Date().toJSON() });
-  await uploadFileContent({ Key, Body: JSON.stringify(data, null, 2) });
-};
+import ServerError from "samepage/backend/ServerError";
 
 export const logic = async ({
   ["x-google-client-id"]: clientId,
@@ -56,25 +45,15 @@ export const logic = async ({
         }
       : {}),
   };
-  if (args.grant_type === "authorization_code") {
-    await log(args.code).catch((e) =>
-      emailError("Failed to log code", e as Error)
-    );
-  }
   const { data } = await axios
     .post<{ access_token: string }>(
       "https://oauth2.googleapis.com/token",
       tokenArgs
     )
-    .catch((e) =>
-      Promise.reject(
-        new Error(
-          `Failed to fetch google token:\n${JSON.stringify(
-            e.response.data
-          )}\nToken args:\n${JSON.stringify(tokenArgs)}`
-        )
-      )
-    );
+    .catch(() => {
+      // Sometimes the token endpoint fails, when the auth/post.ts endpoint is hit multiple times with the same code
+      throw new ServerError("Failed to fetch access token", 401);
+    });
   if (args.grant_type === "authorization_code") {
     return axios
       .get(
